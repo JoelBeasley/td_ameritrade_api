@@ -1,19 +1,38 @@
 module TDAmeritradeAPI
   class Entity
 
+    attr_reader :file_name
+
     def initialize(attributes = {})
       attributes.each { |k, v| instance_variable_set("@#{k}", v) }
     end
 
-    def self.import(file)
+    def self.import(file, file_name)
       entities = []
 
       CSV.foreach(file) do |row|
-        attributes = Hash[self.class::HEADERS.zip(row)]
-        entities << self.class::MODEL.new(attributes)
+        attributes = Hash[self::HEADERS.zip(row)]
+        attributes[:file_name] = file_name
+        entities << new(attributes)
       end
 
       return entities
+    end
+
+    def date_from_file_name
+      Date.strptime(file_name.gsub(/\D/, ''), '%y%m%d')
+    end
+
+    def parsed_date(date)
+      date = date.gsub(/\D/, '')
+
+      if date.length == 6
+        Date.strptime(date, '%m%d%y')
+      elsif date.length == 8
+        Date.strptime(date, '%m%d%Y')
+      else
+        nil
+      end
     end
 
   end
@@ -43,6 +62,11 @@ module TDAmeritradeAPI
     HEADERS = %w(symbol security_type date price factor)
 
     attr_reader :symbol, :security_type, :date, :price, :factor
+
+    def initialize(attributes = {})
+      super
+      @date = date_from_file_name
+    end
   end
 
   class Security < Entity
@@ -50,6 +74,13 @@ module TDAmeritradeAPI
 
     attr_reader :symbol, :security_type, :description, :expiration_date, :call_date, :call_price, :issue_date,
                 :first_coupon, :interest_rate, :share_per_contract, :annual_income_amount, :comment
+
+    def initialize(attributes = {})
+      super
+      @expiration_date = parsed_date(attributes[:expiration_date].to_s)
+      @call_date = parsed_date(attributes[:call_date].to_s)
+      @issue_date = parsed_date(attributes[:issue_date].to_s)
+    end
   end
 
   class Transaction< Entity
