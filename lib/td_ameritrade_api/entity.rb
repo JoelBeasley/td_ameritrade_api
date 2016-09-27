@@ -46,7 +46,16 @@ module TDAmeritradeAPI
                 :disallowed_amount
   end
 
-  class DemographicFile < Entity
+  class Demographic < Entity
+    HEADERS = %w(company first_name last_name address_1 address_2 address_3 address_4 address_5 address_6 city state zip ssn account_number advisor_id taxable phone_number fax_number account_type objective billing_account_number default_account primary_state performance_inception_date billing_inception_date federal_tax_rate state_tax_rate months_in_short_term_holding_period fiscal_year_end use_average_cost_accounting display_accrued_interest display_accrued_dividends display_accrued_gains birth_date discount_rate payout_rate)
+
+    attr_reader :company, :first_name, :last_name, :address_1, :address_2, :address_3, :address_4, :address_5,
+                :address_6, :city, :state, :zip, :ssn, :account_number, :advisor_id, :taxable, :phone_number,
+                :fax_number, :account_type, :objective, :billing_account_number, :default_account, :primary_state,
+                :performance_inception_date, :billing_inception_date, :federal_tax_rate, :state_tax_rate,
+                :months_in_short_term_holding_period, :fiscal_year_end, :use_average_cost_accounting,
+                :display_accrued_interest, :display_accrued_dividends, :display_accrued_gains, :birth_date,
+                :discount_rate, :payout_rate
   end
 
   class InitialPosition < Entity

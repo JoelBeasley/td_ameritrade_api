@@ -5,7 +5,7 @@ module TDAmeritradeAPI
         'SEC' => Security,
         'PRI' => Price,
         'POS' => Position,
-        'TRD' => DemographicFile,
+        'TRD' => Demographic,
         'TRN' => Transaction,
         'INI' => InitialPosition,
         'CBL' => CostBasisReconciliation
