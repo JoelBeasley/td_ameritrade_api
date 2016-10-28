@@ -1,10 +1,11 @@
 module TDAmeritradeAPI
   class Entity
 
-    attr_reader :file_name
+    attr_reader :file_name, :date
 
     def initialize(attributes = {})
       attributes.each { |k, v| instance_variable_set("@#{k}", v) }
+      @date = date_from_file_name
     end
 
     def self.import(file, file_name)
@@ -20,7 +21,10 @@ module TDAmeritradeAPI
     end
 
     def date_from_file_name
-      Date.strptime(file_name.gsub(/\D/, ''), '%y%m%d')
+      raw_date = file_name.gsub(/\D/, '')
+      date = Date.strptime(raw_date, '%y%m%d')
+
+      return date
     end
 
     def parsed_date(date)
@@ -70,12 +74,7 @@ module TDAmeritradeAPI
   class Price < Entity
     HEADERS = %w(symbol security_type date price factor)
 
-    attr_reader :symbol, :security_type, :date, :price, :factor
-
-    def initialize(attributes = {})
-      super
-      @date = date_from_file_name
-    end
+    attr_reader :symbol, :security_type, :price, :factor
   end
 
   class Security < Entity
