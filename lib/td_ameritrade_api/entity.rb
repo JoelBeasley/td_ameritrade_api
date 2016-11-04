@@ -91,10 +91,10 @@ module TDAmeritradeAPI
     end
   end
 
-  class Transaction< Entity
-    HEADERS = %w(broker_account file_date account_number transaction_code activity cancel_status_flag symbol security_type trade_date quantity net_amount principal_amount broker_fee other_fees settle_date from_to_account account_type accrued_interest closing_account_method comments)
+  class Transaction < Entity
+    HEADERS = %w(broker_account file_date account_number transaction_code cancel_status_flag symbol security_type trade_date quantity net_amount principal_amount broker_fee other_fees settle_date from_to_account account_type accrued_interest closing_account_method comments)
 
-    attr_reader :broker_account, :file_date, :account_number, :transaction_code, :activity, :cancel_status_flag,
+    attr_reader :broker_account, :file_date, :account_number, :transaction_code, :cancel_status_flag,
                 :symbol, :security_type, :trade_date, :quantity, :net_amount, :principal_amount, :broker_fee,
                 :other_fees, :settle_date, :from_to_account, :account_type, :accrued_interest, :closing_account_method,
                 :comments
