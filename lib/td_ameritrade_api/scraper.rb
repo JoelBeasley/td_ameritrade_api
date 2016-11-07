@@ -1,4 +1,4 @@
-module TdAmeritradeApi
+module TDAmeritradeAPI
   class Scraper
     include Capybara::DSL
 
@@ -27,13 +27,9 @@ module TdAmeritradeApi
     def run
       visit "#{options[:url]}servlet/advisor/LogIn"
 
-      TDAmeritradeAPI.logger.debug page.body
-
       fill_in 'USERID', with: username
       fill_in 'PASSWORD', with: password
       find('a#loginBtn').click
-
-      TDAmeritradeAPI.logger.debug body
 
       # optional security questions
       if has_selector?('form[name="securityQuestion"]')
@@ -41,25 +37,26 @@ module TdAmeritradeApi
         fill_in 'answer', with: options[:security_questions][question]
         find('input[name="computerType"][value="private"]').click
         find('a#submitBtn').click
-
-        TDAmeritradeAPI.logger.debug body
       end
 
+      # navigate to downloads page
       within_frame 'main' do
-        # navigate to downloads page
         find('#accountTools').click
         first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
-        TDAmeritradeAPI.logger.debug body
+      end
 
-        # filter downloads to specific date
+      # filter downloads to specific date
+      within_frame 'main' do
         fill_in 'fromDate', with: options[:date].strftime('%m/%d/%Y')
         fill_in 'toDate', with: options[:date].strftime('%m/%d/%Y')
-        check 'filesDownloadedBefore'
-        find('a#filterbtn').click
+        find('input[name="filesDownloadedBefore"]').click
+        execute_script 'document.find_files.submit();'
+      end
 
-        # grab the files
+      # grab files
+      within_frame 'main' do
         all('a[title="Download ZIP"]').each do |link|
-          files << link[:href]
+          files << open(link[:href])
         end
       end
 
