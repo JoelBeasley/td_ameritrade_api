@@ -1,5 +1,6 @@
 require 'csv'
-require 'mechanize'
+require 'capybara'
+require 'capybara/poltergeist'
 
 require 'td_ameritrade_api/version'
 require 'td_ameritrade_api/logger'
