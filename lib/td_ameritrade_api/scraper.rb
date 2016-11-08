@@ -8,7 +8,7 @@ module TDAmeritradeAPI
         security_questions: {}
     }
 
-    attr_reader :username, :password, :options, :agent, :files
+    attr_reader :username, :password, :options, :zip_files, :processed_files, :entities
 
     def initialize(username, password, options = {})
       Capybara.default_driver = :poltergeist
@@ -21,10 +21,18 @@ module TDAmeritradeAPI
       @username = username
       @password = password
       @options = DEFAULT_OPTIONS.merge options
-      @files = []
+      @zip_files = []
+      @processed_files = []
+      @entities = {}
     end
 
     def run
+      fetch_zip_files
+      extract_file_contents
+      process_entities
+    end
+
+    def fetch_zip_files
       visit "#{options[:url]}servlet/advisor/LogIn"
 
       fill_in 'USERID', with: username
@@ -47,20 +55,63 @@ module TDAmeritradeAPI
 
       # filter downloads to specific date
       within_frame 'main' do
-        fill_in 'fromDate', with: options[:date].strftime('%m/%d/%Y')
-        fill_in 'toDate', with: options[:date].strftime('%m/%d/%Y')
-        find('input[name="filesDownloadedBefore"]').click
+        # using normal Capybara form fill methods do not work for unknown reasons
+        find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
+        find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
+        execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
         execute_script 'document.find_files.submit();'
+
+        # manual sleep needed to ensure Capybara waits for page refresh
+        sleep 3
       end
 
       # grab files
       within_frame 'main' do
-        all('a[title="Download ZIP"]').each do |link|
-          files << open(link[:href])
+        all('#files_that_match a[title="Download ZIP"]').each do |link|
+          zip_files << open(link[:href])
         end
       end
+    end
 
-      return files
+    def extract_file_contents
+      zip_files.each do |file|
+        Zip::File.open_buffer(file) do |ar|
+          ar.each do |f|
+            processed_files << {
+                advisor: file.meta['filename'].split('.')[0][1..-7],
+                name: f.name,
+                contents: f.get_input_stream.read
+            }
+          end
+        end
+      end
+    end
+
+    def process_entities
+      processed_files.each do |file|
+        entities[file[:advisor]] ||= {
+            'SEC' => [],
+            'PRI' => [],
+            'POS' => [],
+            'TRD' => [],
+            'TRN' => [],
+            'INI' => [],
+            'CBL' => []
+        }
+
+        importer = Importer.new(tempfile(file[:name], file[:contents]), file[:name])
+        file_type = file[:name].split('.')[1]
+
+        entities[file[:advisor]][file_type].concat importer.run
+      end
+
+      return entities
+    end
+
+    def tempfile(name, contents)
+      tempfile = Tempfile.new(name.split('.'))
+      tempfile << contents
+      tempfile
     end
 
   end

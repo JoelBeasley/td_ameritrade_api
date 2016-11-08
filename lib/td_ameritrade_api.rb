@@ -2,6 +2,7 @@ require 'csv'
 require 'capybara'
 require 'capybara/poltergeist'
 require 'open-uri'
+require 'zip'
 
 require 'td_ameritrade_api/version'
 require 'td_ameritrade_api/logger'

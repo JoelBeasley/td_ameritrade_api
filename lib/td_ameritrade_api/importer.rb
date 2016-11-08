@@ -23,7 +23,7 @@ module TDAmeritradeAPI
     end
 
     def adapter
-      ENTITIES[File.extname(file).gsub('.', '').upcase]
+      ENTITIES[file_name.split('.').last.upcase]
     end
 
   end
