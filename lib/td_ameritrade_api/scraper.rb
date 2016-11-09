@@ -8,8 +8,6 @@ module TDAmeritradeAPI
         security_questions: {}
     }
 
-    DOWNLOAD_FILTERING_WAIT = 5
-
     attr_reader :username, :password, :options, :zip_files, :processed_files, :entities
 
     def initialize(username, password, options = {})
@@ -70,16 +68,14 @@ module TDAmeritradeAPI
         find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
         execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
         execute_script 'document.find_files.submit();'
-
-        # manual sleep needed to ensure Capybara waits for page refresh
-        sleep DOWNLOAD_FILTERING_WAIT
       end
 
       # grab files
       within_frame 'main' do
-        TDAmeritradeAPI.logger.debug ' Downloading ZIP files'
-        all('#files_that_match a[title="Download ZIP"]').each do |link|
-          zip_files << open(link[:href])
+        if has_selector?('#files_that_match a[title="Download ZIP"]')
+          all('#files_that_match a[title="Download ZIP"]').each do |link|
+            zip_files << open(link[:href])
+          end
         end
       end
     end
