@@ -27,12 +27,17 @@ module TDAmeritradeAPI
     end
 
     def run
-      fetch_zip_files
-      extract_file_contents
-      process_entities
+      TDAmeritradeAPI.logger.info 'Started TDAmeritradeAPI::Scraper#run'
+      time = Benchmark.realtime do
+        fetch_zip_files
+        extract_file_contents
+        process_entities
+      end
+      TDAmeritradeAPI.logger.info "Completed in #{time * 1000}ms"
     end
 
     def fetch_zip_files
+      TDAmeritradeAPI.logger.debug ' Logging in'
       visit "#{options[:url]}servlet/advisor/LogIn"
 
       fill_in 'USERID', with: username
@@ -41,6 +46,7 @@ module TDAmeritradeAPI
 
       # optional security questions
       if has_selector?('form[name="securityQuestion"]')
+        TDAmeritradeAPI.logger.debug ' Answering security questions'
         question = find('input[name="question"]', visible: false).value
         fill_in 'answer', with: options[:security_questions][question]
         find('input[name="computerType"][value="private"]').click
@@ -49,12 +55,14 @@ module TDAmeritradeAPI
 
       # navigate to downloads page
       within_frame 'main' do
+        TDAmeritradeAPI.logger.debug ' Going to the downloads page'
         find('#accountTools').click
         first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
       end
 
       # filter downloads to specific date
       within_frame 'main' do
+        TDAmeritradeAPI.logger.debug ' Filtering downloads'
         # using normal Capybara form fill methods do not work for unknown reasons
         find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
         find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
@@ -67,6 +75,7 @@ module TDAmeritradeAPI
 
       # grab files
       within_frame 'main' do
+        TDAmeritradeAPI.logger.debug ' Downloading ZIP files'
         all('#files_that_match a[title="Download ZIP"]').each do |link|
           zip_files << open(link[:href])
         end
@@ -74,6 +83,7 @@ module TDAmeritradeAPI
     end
 
     def extract_file_contents
+      TDAmeritradeAPI.logger.debug ' Extracting ZIP files'
       zip_files.each do |file|
         Zip::File.open_buffer(file) do |ar|
           ar.each do |f|
@@ -88,6 +98,7 @@ module TDAmeritradeAPI
     end
 
     def process_entities
+      TDAmeritradeAPI.logger.debug ' Processing entities'
       processed_files.each do |file|
         entities[file[:advisor]] ||= {
             'SEC' => [],

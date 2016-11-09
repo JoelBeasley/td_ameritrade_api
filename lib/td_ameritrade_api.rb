@@ -1,3 +1,4 @@
+require 'benchmark'
 require 'csv'
 require 'capybara'
 require 'capybara/poltergeist'
