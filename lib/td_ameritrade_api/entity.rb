@@ -42,10 +42,10 @@ module TDAmeritradeAPI
   end
 
   class CostBasisReconciliation < Entity
-    HEADERS = %w(custodial_id business_date account_number account_type security_type symbol current_quantity cost_basis adjusted_cost_Basis unrealized_gain_loss cost_basis_fully_known certified_flag original_purchase_date original_purchase_price wash_sale_indicator disallowed_amount)
+    HEADERS = %w(custodial_id business_date account_number account_type security_type symbol current_quantity cost_basis adjusted_cost_basis unrealized_gain_loss cost_basis_fully_known certified_flag original_purchase_date original_purchase_price wash_sale_indicator disallowed_amount)
 
     attr_reader :custodial_id, :business_date, :account_number, :account_type, :security_type, :symbol,
-                :current_quantity, :cost_basis, :adjusted_cost_Basis, :unrealized_gain_loss, :cost_basis_fully_known,
+                :current_quantity, :cost_basis, :adjusted_cost_basis, :unrealized_gain_loss, :cost_basis_fully_known,
                 :certified_flag, :original_purchase_date, :original_purchase_price, :wash_sale_indicator,
                 :disallowed_amount
   end
