@@ -8,6 +8,8 @@ module TDAmeritradeAPI
         security_questions: {}
     }
 
+    DOWNLOAD_FILTERING_WAIT = 5
+
     attr_reader :username, :password, :options, :zip_files, :processed_files, :entities
 
     def initialize(username, password, options = {})
@@ -70,7 +72,7 @@ module TDAmeritradeAPI
         execute_script 'document.find_files.submit();'
 
         # manual sleep needed to ensure Capybara waits for page refresh
-        sleep 3
+        sleep DOWNLOAD_FILTERING_WAIT
       end
 
       # grab files
