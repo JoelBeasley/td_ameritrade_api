@@ -1,6 +1,7 @@
 require 'benchmark'
 require 'csv'
 require 'capybara'
+require 'capybara/dsl'
 require 'capybara/poltergeist'
 require 'open-uri'
 require 'zip'
