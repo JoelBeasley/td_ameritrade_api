@@ -54,31 +54,37 @@ module TDAmeritradeAPI
       end
 
       # navigate to downloads page
-      within_frame 'main' do
-        TDAmeritradeAPI.logger.info ' Going to the downloads page'
-        find('#accountTools').click
-        first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
-      end
+      if has_selector?('frame[name="main"]')
 
-      # filter downloads to specific date
-      within_frame 'main' do
-        TDAmeritradeAPI.logger.info ' Filtering downloads'
-        # using normal Capybara form fill methods do not work for unknown reasons
-        find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
-        find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
-        execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
-        execute_script 'document.find_files.submit();'
-      end
+        within_frame 'main' do
+          TDAmeritradeAPI.logger.info ' Going to the downloads page'
+          find('#accountTools').click
+          first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
+        end
 
-      # grab files
-      within_frame 'main' do
-        TDAmeritradeAPI.logger.info ' Downloading ZIP Files'
+        # filter downloads to specific date
+        within_frame 'main' do
+          TDAmeritradeAPI.logger.info ' Filtering downloads'
+          # using normal Capybara form fill methods do not work for unknown reasons
+          find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
+          find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
+          execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
+          execute_script 'document.find_files.submit();'
+        end
 
-        if has_selector?('#files_that_match a[title="Download ZIP"]')
-          all('#files_that_match a[title="Download ZIP"]').each do |link|
-            zip_files << open(link[:href])
+        # grab files
+        within_frame 'main' do
+          TDAmeritradeAPI.logger.info ' Downloading ZIP Files'
+
+          if has_selector?('#files_that_match a[title="Download ZIP"]')
+            all('#files_that_match a[title="Download ZIP"]').each do |link|
+              zip_files << open(link[:href])
+            end
           end
         end
+
+      else
+        raise 'Failed login'
       end
 
     rescue Exception => e
