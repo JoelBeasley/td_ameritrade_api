@@ -53,9 +53,10 @@ module TDAmeritradeAPI
         find('a#submitBtn').click
       end
 
-      # navigate to downloads page
+      # ensure we've logged in
       if has_selector?('frame[name="main"]')
 
+        # navigate to downloads page
         within_frame 'main' do
           TDAmeritradeAPI.logger.info ' Going to the downloads page'
           find('#accountTools').click
