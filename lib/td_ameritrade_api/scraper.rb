@@ -48,7 +48,7 @@ module TDAmeritradeAPI
       if has_selector?('form[name="securityQuestion"]')
         TDAmeritradeAPI.logger.info ' Answering security questions'
         question = find('input[name="question"]', visible: false).value
-        fill_in 'answer', with: options[:security_questions][question]
+        fill_in 'answer', with: security_question_answer(question)
         find('input[name="computerType"][value="private"]').click
         find('a#submitBtn').click
       end
@@ -127,6 +127,16 @@ module TDAmeritradeAPI
       tempfile = Tempfile.new(name.split('.'))
       tempfile << contents
       tempfile
+    end
+
+    private
+
+    def security_question_answer(question)
+      if options[:security_questions].has_key?(question)
+        options[:security_questions][question]
+      else
+        raise "Unknown security question: #{question}"
+      end
     end
 
   end
