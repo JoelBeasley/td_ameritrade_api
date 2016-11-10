@@ -82,7 +82,7 @@ module TDAmeritradeAPI
       end
 
     rescue Exception => e
-      TDAmeritradeAPI.debug body
+      TDAmeritradeAPI.logger.debug body
       raise
     end
 
