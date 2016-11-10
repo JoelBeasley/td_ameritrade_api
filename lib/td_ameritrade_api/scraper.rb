@@ -46,7 +46,7 @@ module TDAmeritradeAPI
 
       # optional security questions
       if has_selector?('form[name="securityQuestion"]')
-        TDAmeritradeAPI.logger.debug ' Answering security questions'
+        TDAmeritradeAPI.logger.info ' Answering security questions'
         question = find('input[name="question"]', visible: false).value
         fill_in 'answer', with: options[:security_questions][question]
         find('input[name="computerType"][value="private"]').click
@@ -55,14 +55,14 @@ module TDAmeritradeAPI
 
       # navigate to downloads page
       within_frame 'main' do
-        TDAmeritradeAPI.logger.debug ' Going to the downloads page'
+        TDAmeritradeAPI.logger.info ' Going to the downloads page'
         find('#accountTools').click
         first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
       end
 
       # filter downloads to specific date
       within_frame 'main' do
-        TDAmeritradeAPI.logger.debug ' Filtering downloads'
+        TDAmeritradeAPI.logger.info ' Filtering downloads'
         # using normal Capybara form fill methods do not work for unknown reasons
         find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
         find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
@@ -72,16 +72,22 @@ module TDAmeritradeAPI
 
       # grab files
       within_frame 'main' do
+        TDAmeritradeAPI.logger.info ' Downloading ZIP Files'
+
         if has_selector?('#files_that_match a[title="Download ZIP"]')
           all('#files_that_match a[title="Download ZIP"]').each do |link|
             zip_files << open(link[:href])
           end
         end
       end
+
+    rescue Exception => e
+      TDAmeritradeAPI.debug body
+      raise
     end
 
     def extract_file_contents
-      TDAmeritradeAPI.logger.debug ' Extracting ZIP files'
+      TDAmeritradeAPI.logger.info ' Extracting ZIP files'
       zip_files.each do |file|
         Zip::File.open_buffer(file) do |ar|
           ar.each do |f|
@@ -96,7 +102,7 @@ module TDAmeritradeAPI
     end
 
     def process_entities
-      TDAmeritradeAPI.logger.debug ' Processing entities'
+      TDAmeritradeAPI.logger.info ' Processing entities'
       processed_files.each do |file|
         entities[file[:advisor]] ||= {
             'SEC' => [],
