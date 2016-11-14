@@ -28,15 +28,22 @@ module TDAmeritradeAPI
 
     def run
       TDAmeritradeAPI.logger.info 'Started TDAmeritradeAPI::Scraper#run'
+
       time = Benchmark.realtime do
+        login
+        navigate_to_downloads
+        filter_downloads
         fetch_zip_files
         extract_file_contents
         process_entities
       end
+
       TDAmeritradeAPI.logger.info "Completed in #{time * 1000}ms"
     end
 
-    def fetch_zip_files
+    private
+
+    def login
       TDAmeritradeAPI.logger.debug ' Logging in'
       visit "#{options[:url]}servlet/advisor/LogIn"
 
@@ -54,43 +61,64 @@ module TDAmeritradeAPI
       end
 
       # ensure we've logged in
-      if has_selector?('frame[name="main"]')
+      unless has_selector?('frame[name="main"]')
+        TDAmeritradeAPI.logger.debug body
+        raise 'Failed login'
+      end
+    end
 
-        # navigate to downloads page
-        within_frame 'main' do
+    def navigate_to_downloads
+      within_frame 'main' do
+        begin
           TDAmeritradeAPI.logger.info ' Going to the downloads page'
           find('#accountTools').click
           first('#accountTools_dd_nav a[href="/servlet/advisor/accounttools/filedownloads"]').click
-        end
 
-        # filter downloads to specific date
-        within_frame 'main' do
+        rescue Exception => e
+          TDAmeritradeAPI.logger.debug body
+          TDAmeritradeAPI.logger.error e.message
+          raise
+        end
+      end
+    end
+
+    def filter_downloads
+      within_frame 'main' do
+        begin
           TDAmeritradeAPI.logger.info ' Filtering downloads'
           # using normal Capybara form fill methods do not work for unknown reasons
           find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
           find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
           execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
           execute_script 'document.find_files.submit();'
+
+        rescue Exception => e
+          TDAmeritradeAPI.logger.debug body
+          TDAmeritradeAPI.logger.error e.message
+          raise
         end
+      end
+    end
 
-        # grab files
-        within_frame 'main' do
+    def fetch_zip_files
+      within_frame 'main' do
+        begin
           TDAmeritradeAPI.logger.info ' Downloading ZIP Files'
+          within('#files_that_match') do
+            sleep(1) # without sleeping frame won't load fully
 
-          if has_selector?('#files_that_match a[title="Download ZIP"]')
             all('#files_that_match a[title="Download ZIP"]').each do |link|
+              Rails.logger.info link[:href]
               zip_files << open(link[:href])
             end
           end
+
+        rescue Exception => e
+          TDAmeritradeAPI.logger.debug body
+          TDAmeritradeAPI.logger.error e.message
+          raise
         end
-
-      else
-        raise 'Failed login'
       end
-
-    rescue Exception => e
-      TDAmeritradeAPI.logger.debug body
-      raise
     end
 
     def extract_file_contents
@@ -135,8 +163,6 @@ module TDAmeritradeAPI
       tempfile << contents
       tempfile
     end
-
-    private
 
     def security_question_answer(question)
       if options[:security_questions].has_key?(question)
