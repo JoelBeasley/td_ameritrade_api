@@ -92,6 +92,10 @@ module TDAmeritradeAPI
           execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
           execute_script 'document.find_files.submit();'
 
+          # without sleeping, capybara doesn't know to wait for form submission and will throw errors when frame
+          # refreshes during later execution
+          sleep(1)
+
         rescue Exception => e
           TDAmeritradeAPI.logger.debug body
           TDAmeritradeAPI.logger.error e.message
@@ -104,9 +108,8 @@ module TDAmeritradeAPI
       within_frame 'main' do
         begin
           TDAmeritradeAPI.logger.info ' Downloading ZIP Files'
-          within('#files_that_match') do
-            sleep(1) # without sleeping frame won't load fully
 
+          within('#files_that_match') do
             all('#files_that_match a[title="Download ZIP"]').each do |link|
               Rails.logger.info link[:href]
               zip_files << open(link[:href])
