@@ -4,8 +4,11 @@ module TDAmeritradeAPI
 
     DEFAULT_OPTIONS = {
         url: 'https://www.advisorservices.com/',
-        date: Date.today,
-        security_questions: {}
+        security_questions: {},
+        date_start: Date.today,
+        date_end: Date.today,
+        advisor: 'A',
+        file_type: 'A'
     }
 
     attr_reader :username, :password, :options, :zip_files, :processed_files, :entities
@@ -87,9 +90,11 @@ module TDAmeritradeAPI
         begin
           TDAmeritradeAPI.logger.info ' Filtering downloads'
           # using normal Capybara form fill methods do not work for unknown reasons
-          find('#invoice_fromdate').set options[:date].strftime('%m/%d/%Y')
-          find('#invoice_todate').set options[:date].strftime('%m/%d/%Y')
-          execute_script '$(\'[name="filesDownloadedBefore"]\').attr(\'checked\', true);'
+          find('#invoice_fromdate').set options[:date_start].strftime('%m/%d/%Y')
+          find('#invoice_todate').set options[:date_end].strftime('%m/%d/%Y')
+          execute_script "$('[name=\"filesDownloadedBefore\"]').attr('checked', true);"
+          execute_script "$('[name=\"advisor\"]').val('#{options[:advisor]}')"
+          execute_script "$('[name=\"fileType\"]').val('#{options[:file_type]}')"
           execute_script 'document.find_files.submit();'
 
           # without sleeping, capybara doesn't know to wait for form submission and will throw errors when frame
