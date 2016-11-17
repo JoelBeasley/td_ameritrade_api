@@ -85,9 +85,9 @@ module TDAmeritradeAPI
 
     def initialize(attributes = {})
       super
-      @expiration_date = parsed_date(attributes['expiration_date'].to_s) unless @file_date.is_a?(Date)
-      @call_date = parsed_date(attributes['call_date'].to_s) unless @file_date.is_a?(Date)
-      @issue_date = parsed_date(attributes['issue_date'].to_s) unless @file_date.is_a?(Date)
+      @expiration_date = parsed_date(attributes['expiration_date'].to_s) unless @expiration_date.is_a?(Date)
+      @call_date = parsed_date(attributes['call_date'].to_s) unless @call_date.is_a?(Date)
+      @issue_date = parsed_date(attributes['issue_date'].to_s) unless @issue_date.is_a?(Date)
     end
   end
 
@@ -102,7 +102,7 @@ module TDAmeritradeAPI
     def initialize(attributes = {})
       super
       @file_date = parsed_date(attributes['file_date'].to_s) unless @file_date.is_a?(Date)
-      @trade_date = parsed_date(attributes['trade_date'].to_s) unless @file_date.is_a?(Date)
+      @trade_date = parsed_date(attributes['trade_date'].to_s) unless @trade_date.is_a?(Date)
     end
   end
 end
