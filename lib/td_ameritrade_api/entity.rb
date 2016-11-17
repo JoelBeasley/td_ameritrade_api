@@ -85,9 +85,9 @@ module TDAmeritradeAPI
 
     def initialize(attributes = {})
       super
-      @expiration_date = parsed_date(attributes[:expiration_date].to_s)
-      @call_date = parsed_date(attributes[:call_date].to_s)
-      @issue_date = parsed_date(attributes[:issue_date].to_s)
+      @expiration_date = parsed_date(attributes['expiration_date'].to_s) unless @file_date.is_a?(Date)
+      @call_date = parsed_date(attributes['call_date'].to_s) unless @file_date.is_a?(Date)
+      @issue_date = parsed_date(attributes['issue_date'].to_s) unless @file_date.is_a?(Date)
     end
   end
 
@@ -98,5 +98,11 @@ module TDAmeritradeAPI
                 :symbol, :security_type, :trade_date, :quantity, :net_amount, :principal_amount, :broker_fee,
                 :other_fees, :settle_date, :from_to_account, :account_type, :accrued_interest, :closing_account_method,
                 :comments
+
+    def initialize(attributes = {})
+      super
+      @file_date = parsed_date(attributes['file_date'].to_s) unless @file_date.is_a?(Date)
+      @trade_date = parsed_date(attributes['trade_date'].to_s) unless @file_date.is_a?(Date)
+    end
   end
 end
