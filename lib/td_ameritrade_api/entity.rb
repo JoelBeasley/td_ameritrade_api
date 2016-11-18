@@ -27,13 +27,13 @@ module TDAmeritradeAPI
       return date
     end
 
-    def parsed_date(date)
-      date = date.gsub(/\D/, '')
+    def parse_date(date_str)
+      date_str = date_str.gsub(/\D/, '')
 
-      if date.length == 6
-        Date.strptime(date, '%m%d%y')
-      elsif date.length == 8
-        Date.strptime(date, '%m%d%Y')
+      if date_str.length == 6
+        Date.strptime(date_str, '%m%d%y')
+      elsif date_str.length == 8
+        Date.strptime(date_str, '%m%d%Y')
       else
         nil
       end
@@ -42,12 +42,26 @@ module TDAmeritradeAPI
   end
 
   class CostBasisReconciliation < Entity
-    HEADERS = %w(custodial_id business_date account_number account_type security_type symbol current_quantity cost_basis adjusted_cost_basis unrealized_gain_loss cost_basis_fully_known certified_flag original_purchase_date original_purchase_price wash_sale_indicator disallowed_amount)
+    HEADERS = %w(custodial_id business_date account_number account_type security_type symbol current_quantity cost_basis
+                adjusted_cost_basis unrealized_gain_loss cost_basis_fully_known certified_flag original_purchase_date
+                original_purchase_price wash_sale_indicator disallowed_amount averaged_cost book_cost book_proceeds
+                fixed_income_cost_adjustment id security_name covered unknown_total)
 
     attr_reader :custodial_id, :business_date, :account_number, :account_type, :security_type, :symbol,
                 :current_quantity, :cost_basis, :adjusted_cost_basis, :unrealized_gain_loss, :cost_basis_fully_known,
                 :certified_flag, :original_purchase_date, :original_purchase_price, :wash_sale_indicator,
-                :disallowed_amount
+                :disallowed_amount, :averaged_cost, :book_cost, :book_proceeds, :fixed_income_cost_adjustment, :id,
+                :security_name, :covered, :unknown_total
+
+    def initialize(attributes = {})
+      super
+      @business_date = parse_date(attributes['business_date'].to_s) unless @business_date.is_a?(Date)
+      @original_purchase_date = parse_date(attributes['original_purchase_date'].to_s) unless @original_purchase_date.is_a?(Date)
+
+      @cost_basis_fully_known = attributes['cost_basis_fully_known'].to_s == 'T'
+      @certified_flag = attributes['certified_flag'].to_s == 'Y'
+      @covered = attributes['covered'].to_s == 'Y'
+    end
   end
 
   class Demographic < Entity
@@ -85,9 +99,9 @@ module TDAmeritradeAPI
 
     def initialize(attributes = {})
       super
-      @expiration_date = parsed_date(attributes['expiration_date'].to_s) unless @expiration_date.is_a?(Date)
-      @call_date = parsed_date(attributes['call_date'].to_s) unless @call_date.is_a?(Date)
-      @issue_date = parsed_date(attributes['issue_date'].to_s) unless @issue_date.is_a?(Date)
+      @expiration_date = parse_date(attributes['expiration_date'].to_s) unless @expiration_date.is_a?(Date)
+      @call_date = parse_date(attributes['call_date'].to_s) unless @call_date.is_a?(Date)
+      @issue_date = parse_date(attributes['issue_date'].to_s) unless @issue_date.is_a?(Date)
     end
   end
 
@@ -101,8 +115,8 @@ module TDAmeritradeAPI
 
     def initialize(attributes = {})
       super
-      @file_date = parsed_date(attributes['file_date'].to_s) unless @file_date.is_a?(Date)
-      @trade_date = parsed_date(attributes['trade_date'].to_s) unless @trade_date.is_a?(Date)
+      @file_date = parse_date(attributes['file_date'].to_s) unless @file_date.is_a?(Date)
+      @trade_date = parse_date(attributes['trade_date'].to_s) unless @trade_date.is_a?(Date)
     end
   end
 end
